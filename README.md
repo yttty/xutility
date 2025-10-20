@@ -8,3 +8,6 @@
 - Formatter: Use `black` and `isort` to format code
     - Formatter config: `.vscode/settings.json`
 - Type checker: `mypy`
+
+### Document
+- Check the [docs](./docs) folder.
