@@ -8,21 +8,23 @@ DEFAULT_LOG_FORMAT = "<green>{time:YYYY-MM-DD HH:mm:ss.SSSSSS}</green> | <level>
 
 
 def setup_logger(
-    service_name: str,
-    module_name: str = "",
+    log_file_name: str,
+    log_base_dir: pathlib.Path = pathlib.Path("logs"),
     file_level: Literal["", "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "DEBUG",
     echo_level: Literal["", "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO",
-    log_base_dir: pathlib.Path = pathlib.Path.home() / "logs",
+    rotation: bool = False,
+    retention: str = "7 days",
     log_fmt: str = DEFAULT_LOG_FORMAT,
 ) -> None:
-    """Log to `log_base_dir/service_name/service_name.YYYY-MM-DD.log or module_name.YYYY-MM-DD.log` with daily rotation
+    """Log to `log_base_dir/log_file_name.YYYY-MM-DD.log` with optional rotation and retention
 
     Args:
-        service_name (str): _description_
-        module_name (str, optional): _description_. Defaults to "".
+        log_file_name (str): _description_
+        log_base_dir (pathlib.Path, optional): _description_. Defaults to pathlib.Path("logs").
         file_level (Literal[&quot;&quot;, &quot;DEBUG&quot;, &quot;INFO&quot;, &quot;WARNING&quot;, &quot;ERROR&quot;, &quot;CRITICAL&quot;], optional): _description_. Defaults to "DEBUG".
-        echo_level (Literal[&quot;&quot;, &quot;DEBUG&quot;, &quot;INFO&quot;, &quot;WARNING&quot;, &quot;ERROR&quot;, &quot;CRITICAL&quot;], optional): _description_. Defaults to "".
-        log_base_dir (pathlib.Path, optional): _description_. Defaults to pathlib.Path.home()/"logs".
+        echo_level (Literal[&quot;&quot;, &quot;DEBUG&quot;, &quot;INFO&quot;, &quot;WARNING&quot;, &quot;ERROR&quot;, &quot;CRITICAL&quot;], optional): _description_. Defaults to "INFO".
+        rotation (bool, optional): _description_. Defaults to False.
+        retention (str, optional): _description_. Defaults to "7 days".
         log_fmt (str, optional): _description_. Defaults to DEFAULT_LOG_FORMAT.
     """
     logger.configure(handlers=None)
@@ -33,10 +35,15 @@ def setup_logger(
         all_handlers_cfg.append(echo_handler_cfg)
     # file handler
     if file_level in ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]:
-        if not module_name:
-            sink_path = log_base_dir / service_name / (service_name + ".{time:YYYY-MM-DD}" + ".log")
+        log_base_dir.mkdir(parents=True, exist_ok=True)
+        if rotation:
+            sink_path = log_base_dir / (log_file_name + ".{time:YYYY-MM-DD}" + ".log")
         else:
-            sink_path = log_base_dir / service_name / (module_name + ".{time:YYYY-MM-DD}" + ".log")
-        file_handler_cfg = dict(sink=sink_path, level=file_level, rotation="00:00", format=log_fmt)
+            sink_path = log_base_dir / (log_file_name + ".log")
+        file_handler_cfg = dict(sink=sink_path, level=file_level, format=log_fmt)
+        if rotation:
+            file_handler_cfg["rotation"] = "00:00"
+        if retention:
+            file_handler_cfg["retention"] = retention
         all_handlers_cfg.append(file_handler_cfg)
     logger.configure(handlers=all_handlers_cfg)
