@@ -1,6 +1,6 @@
 [project]
 name = "xutility"
-version = "0.3.0"
+version = "0.3.1"
 description = "A miscellaneous toolkit"
 authors = [{ name = "yttty", email = "yttty@users.noreply.github.com" }]
 license = "MIT"

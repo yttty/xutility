@@ -8,9 +8,9 @@ DEFAULT_LOG_FORMAT = "<green>{time:YYYY-MM-DD HH:mm:ss.SSSSSS}</green> | <level>
 
 
 def setup_logger(
-    log_file_name: str,
+    log_file_name: str = "",
     log_base_dir: pathlib.Path = pathlib.Path("logs"),
-    file_level: Literal["", "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "DEBUG",
+    file_level: Literal["", "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "",
     echo_level: Literal["", "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO",
     rotation: bool = False,
     retention: str = "7 days",
@@ -19,7 +19,7 @@ def setup_logger(
     """Log to `log_base_dir/log_file_name.YYYY-MM-DD.log` with optional rotation and retention
 
     Args:
-        log_file_name (str): _description_
+        log_file_name (str): _description_. Defaults to "".
         log_base_dir (pathlib.Path, optional): _description_. Defaults to pathlib.Path("logs").
         file_level (Literal[&quot;&quot;, &quot;DEBUG&quot;, &quot;INFO&quot;, &quot;WARNING&quot;, &quot;ERROR&quot;, &quot;CRITICAL&quot;], optional): _description_. Defaults to "DEBUG".
         echo_level (Literal[&quot;&quot;, &quot;DEBUG&quot;, &quot;INFO&quot;, &quot;WARNING&quot;, &quot;ERROR&quot;, &quot;CRITICAL&quot;], optional): _description_. Defaults to "INFO".
@@ -35,6 +35,10 @@ def setup_logger(
         all_handlers_cfg.append(echo_handler_cfg)
     # file handler
     if file_level in ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]:
+        if not log_file_name:
+            raise ValueError("log_file_name must be specified when file_level is specified")
+        if log_file_name.endswith(".log"):
+            log_file_name = log_file_name.replace(".log", "")
         log_base_dir.mkdir(parents=True, exist_ok=True)
         if rotation:
             sink_path = log_base_dir / (log_file_name + ".{time:YYYY-MM-DD}" + ".log")
